@@ -3,8 +3,8 @@
 // (see store.js) and merged with this demo data at runtime.
 
 export const CHAZZANIM = [
-  { id: "david-cohen", name: "דוד כהן", bio: "חזן • 18 מנגינות" },
-  { id: "yosef-levi", name: "יוסף לוי", bio: "חזן • 12 מנגינות" },
+  { id: "david-cohen", name: "דוד כהן", bio: "חזן" },
+  { id: "yosef-levi", name: "יוסף לוי", bio: "חזן" },
 ];
 
 export const PERFORMANCES = [
