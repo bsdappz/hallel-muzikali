@@ -79,6 +79,10 @@ export default function AddMelodyPage() {
       setError("יש להזין שם שיר.");
       return;
     }
+    if (mode === "above_words" && lines.length === 0) {
+      setError("יש להזין לפחות שורת מילים אחת.");
+      return;
+    }
     const partName = (HALLEL_PARTS.find((p) => p.id === part) || {}).name || "";
     const melody = {
       id: uid("m-user"),
