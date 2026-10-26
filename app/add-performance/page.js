@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { postPerformance } from "../lib/api";
+import { postPerformance, fetchMe } from "../lib/api";
 import { todayIso } from "../lib/data";
 
 export default function AddPerformancePage() {
@@ -15,6 +15,18 @@ export default function AddPerformancePage() {
   const [chazzan, setChazzan] = useState("");
   const [flyerPreview, setFlyerPreview] = useState("");
   const [error, setError] = useState("");
+  const [authed, setAuthed] = useState(false);
+
+  useEffect(() => {
+    fetchMe()
+      .then((d) => {
+        if (d.user) setAuthed(true);
+        else router.push("/login");
+      })
+      .catch(() => router.push("/login"));
+  }, [router]);
+
+  if (!authed) return <p>טוען...</p>;
 
   const onFlyer = (file) => {
     if (!file) {
@@ -52,7 +64,7 @@ export default function AddPerformancePage() {
   return (
     <>
       <h1>הוספת תפילה</h1>
-      <p className="subtitle">הוספה פתוחה בגרסה זו לכולם, בלי הרשמה. בגרסה מלאה היא תדרוש רישום.</p>
+      <p className="subtitle">הוספת תפילה דורשת התחברות. התפילה תישמר בדיבי המשותף ותופיע בדף הבית לכולם.</p>
       {error && <div className="error">{error}</div>}
 
       <div className="field">

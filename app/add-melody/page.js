@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { HALLEL_PARTS, YEAR_TAGS } from "../lib/data";
 import { DEFAULT_SCALE, allScales, scaleChords, outsideChords, searchChords } from "../lib/chords";
-import { postMelody } from "../lib/api";
+import { postMelody, fetchMe } from "../lib/api";
 
 const DEFAULT_LINES_TEXT =
   "הללו עבדי ה׳ הללו את שם ה׳\nיהי שם ה׳ מבורך מעתה ועד עולם\nממזרח שמש עד מבואו מהלל שם ה׳";
@@ -23,6 +23,18 @@ export default function AddMelodyPage() {
   const [selected, setSelected] = useState(null);
   const [search, setSearch] = useState("");
   const [error, setError] = useState("");
+  const [authed, setAuthed] = useState(false);
+
+  useEffect(() => {
+    fetchMe()
+      .then((d) => {
+        if (d.user) setAuthed(true);
+        else router.push("/login");
+      })
+      .catch(() => router.push("/login"));
+  }, [router]);
+
+  if (!authed) return <p>טוען...</p>;
 
   const lines = useMemo(
     () =>
@@ -112,7 +124,7 @@ export default function AddMelodyPage() {
   return (
     <>
       <h1>הוספת מנגינה</h1>
-      <p className="subtitle">הוספה פתוחה בגרסה זו לכולם, בלי הרשמה. בגרסה מלאה היא תדרוש רישום כחזן.</p>
+      <p className="subtitle">הוספת מנגינה דורשת התחברות כחזן. המנגינה תישמר בדיבי המשותף ותופיע בספרייה לכולם.</p>
       {error && <div className="error">{error}</div>}
 
       <div className="field">

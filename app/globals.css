@@ -7,6 +7,8 @@ a { color: #a87f0a; }
 .logo span { color: #c9a227; }
 .nav { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 8px; }
 .nav a { text-decoration: none; font-size: 14px; font-weight: bold; }
+.auth-nav { font-size: 14px; font-weight: bold; }
+.auth-nav button { background: none; border: none; cursor: pointer; font: inherit; color: inherit; padding: 0; text-decoration: underline; }
 .nav a:hover { text-decoration: underline; }
 .footer { text-align: center; color: #7a6a55; font-size: 12px; padding: 20px 16px 32px; line-height: 1.8; }
 h1 { font-size: 24px; margin-bottom: 4px; }

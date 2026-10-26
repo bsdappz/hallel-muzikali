@@ -1,4 +1,5 @@
 import Link from "next/link";
+import AuthNav from "./components/AuthNav";
 import "./globals.css";
 
 export const metadata = {
@@ -19,6 +20,7 @@ export default function RootLayout({ children }) {
             <Link href="/melodies">🎵 ספריית מנגינות</Link>
             <Link href="/add-melody">＋ הוסף מנגינה</Link>
             <Link href="/add-performance">＋ הוסף תפילה</Link>
+            <AuthNav />
           </nav>
         </header>
         <main className="container">{children}</main>

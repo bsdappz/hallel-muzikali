@@ -2,9 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { PERFORMANCES, formatDate, mapsUrl, todayIso } from "./lib/data";
-import { loadLikes, saveLikes } from "./lib/store";
-import { fetchSiteData, postLike } from "./lib/api";
+import { fetchSiteData, toggleLike as toggleLikeApi, deleteItem } from "./lib/api";
 
 function FlyerPlaceholder({ title }) {
   return (
@@ -16,35 +16,53 @@ function FlyerPlaceholder({ title }) {
 }
 
 export default function Home() {
+  const router = useRouter();
   const [performances, setPerformances] = useState(PERFORMANCES);
-  const [likes, setLikes] = useState({});
+  const [user, setUser] = useState(null);
   const [search, setSearch] = useState("");
   const [city, setCity] = useState("הכל");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("הכל");
 
   useEffect(() => {
-    setLikes(loadLikes());
     fetchSiteData()
-      .then((data) => setPerformances(data.performances))
+      .then((data) => {
+        setPerformances(data.performances);
+        setUser(data.user);
+      })
       .catch(() => {});
   }, []);
 
   const toggleLike = (id) => {
-    const liked = !likes[id];
-    const delta = liked ? 1 : -1;
-    setLikes((prev) => {
-      const next = { ...prev };
-      if (liked) next[id] = true;
-      else delete next[id];
-      saveLikes(next);
-      return next;
-    });
-    setPerformances((prev) => prev.map((p) => (p.id === id ? { ...p, likes: Math.max(0, (p.likes || 0) + delta) } : p)));
-    postLike(id, delta).catch(() => {
-      // Revert the optimistic update if the server write failed.
-      setPerformances((prev) => prev.map((p) => (p.id === id ? { ...p, likes: Math.max(0, (p.likes || 0) - delta) } : p)));
-    });
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+    const target = performances.find((p) => p.id === id);
+    if (!target) return;
+    const delta = target.liked ? -1 : 1;
+    setPerformances((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, liked: !p.liked, likes: Math.max(0, (p.likes || 0) + delta) } : p))
+    );
+    toggleLikeApi(id, "perf")
+      .then((res) => {
+        setPerformances((prev) => prev.map((p) => (p.id === id ? { ...p, liked: res.liked, likes: res.likes } : p)));
+      })
+      .catch(() => {
+        setPerformances((prev) =>
+          prev.map((p) => (p.id === id ? { ...p, liked: target.liked, likes: target.likes } : p))
+        );
+      });
+  };
+
+  const deletePerf = async (id) => {
+    if (!window.confirm("למחוק את התפילה הזו?")) return;
+    try {
+      await deleteItem("perf", id);
+      setPerformances((prev) => prev.filter((p) => p.id !== id));
+    } catch {
+      /* server error shown by keeping the card in place */
+    }
   };
 
   const all = useMemo(() => {
@@ -129,7 +147,7 @@ export default function Home() {
       )}
 
       {visible.map((p) => {
-        const liked = !!likes[p.id];
+        const liked = !!p.liked;
         return (
           <article className="card" key={p.id}>
             <FlyerPlaceholder title={p.title} />
@@ -159,6 +177,11 @@ export default function Home() {
                 >
                   👍 {p.likes}
                 </button>
+                {user && p.ownerId === user.id && (
+                  <button type="button" className="like-btn" onClick={() => deletePerf(p.id)} aria-label="מחק תפילה">
+                    🗑 מחק
+                  </button>
+                )}
               </div>
             </div>
           </article>
@@ -167,7 +190,7 @@ export default function Home() {
 
       <div style={{ textAlign: "center", marginTop: 16 }}>
         <Link className="gold-btn" href="/add-performance">
-          ＋ הוסף תפילה (לרשומים — בגרסה זו פתוח לכולם)
+          ＋ הוסף תפילה (לרשומים)
         </Link>
       </div>
       <p className="note">בגרסה הבאה: סינון לפי מרחק נסיעה מנקודה מסוימת.</p>

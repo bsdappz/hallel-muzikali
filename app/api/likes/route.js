@@ -1,11 +1,16 @@
 import { NextResponse } from "next/server";
-import { PERFORMANCES, MELODIES } from "../../lib/data";
-import { adjustLikeCount } from "../../lib/db";
+import { getItem, toggleLike } from "../../lib/db";
+import { currentUser } from "../../lib/auth";
 
 export const dynamic = "force-dynamic";
 
-// Body: { id, delta } with delta +1 (like) or -1 (unlike).
+// Toggle the current user's like. Body: { id, kind } with kind
+// "perf" or "melody". Returns { liked, likes } (displayed count).
 export async function POST(req) {
+  const user = await currentUser();
+  if (!user) {
+    return NextResponse.json({ error: "יש להתחבר כדי לסמן אהבתי." }, { status: 401 });
+  }
   let body;
   try {
     body = await req.json();
@@ -13,12 +18,14 @@ export async function POST(req) {
     return NextResponse.json({ error: "גוף הבקשה אינו JSON תקין." }, { status: 400 });
   }
   const id = typeof body.id === "string" ? body.id : "";
-  const delta = body.delta === -1 ? -1 : 1;
+  const kind = body.kind === "melody" ? "melody" : "perf";
   if (!id) {
     return NextResponse.json({ error: "חסר מזהה פריט." }, { status: 400 });
   }
-  const deltaTotal = await adjustLikeCount(id, delta);
-  const demo = [...PERFORMANCES, ...MELODIES].find((it) => it.id === id);
-  const likes = Math.max(0, (demo ? demo.likes || 0 : 0) + deltaTotal);
-  return NextResponse.json({ id, likes });
+  const item = await getItem(kind, id);
+  if (!item) {
+    return NextResponse.json({ error: "הפריט לא נמצא." }, { status: 404 });
+  }
+  const result = await toggleLike(item, user.id);
+  return NextResponse.json({ id, liked: result.liked, likes: result.likes });
 }

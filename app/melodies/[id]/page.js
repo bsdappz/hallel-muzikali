@@ -2,23 +2,23 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { MELODIES } from "../../lib/data";
-import { loadLikes, saveLikes } from "../../lib/store";
-import { fetchSiteData, postLike } from "../../lib/api";
+import { fetchSiteData, toggleLike as toggleLikeApi, deleteItem } from "../../lib/api";
 
 export default function MelodyPage() {
   const params = useParams();
+  const router = useRouter();
   const [melody, setMelody] = useState(null);
+  const [user, setUser] = useState(null);
   const [loaded, setLoaded] = useState(false);
-  const [liked, setLiked] = useState(false);
 
   useEffect(() => {
-    setLiked(!!loadLikes()[params.id]);
     const fallback = MELODIES.find((m) => m.id === params.id) || null;
     fetchSiteData()
       .then((data) => {
         setMelody(data.melodies.find((m) => m.id === params.id) || null);
+        setUser(data.user);
         setLoaded(true);
       })
       .catch(() => {
@@ -28,17 +28,28 @@ export default function MelodyPage() {
   }, [params.id]);
 
   const toggleLike = () => {
-    const next = !liked;
-    const delta = next ? 1 : -1;
-    const likes = loadLikes();
-    if (next) likes[params.id] = true;
-    else delete likes[params.id];
-    saveLikes(likes);
-    setLiked(next);
-    setMelody((prev) => (prev ? { ...prev, likes: Math.max(0, (prev.likes || 0) + delta) } : prev));
-    postLike(params.id, delta).catch(() => {
-      setMelody((prev) => (prev ? { ...prev, likes: Math.max(0, (prev.likes || 0) - delta) } : prev));
-    });
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+    if (!melody) return;
+    const prev = melody;
+    setMelody({ ...prev, liked: !prev.liked, likes: Math.max(0, (prev.likes || 0) + (prev.liked ? -1 : 1)) });
+    toggleLikeApi(params.id, "melody")
+      .then((res) => {
+        setMelody((m) => (m ? { ...m, liked: res.liked, likes: res.likes } : m));
+      })
+      .catch(() => setMelody(prev));
+  };
+
+  const deleteMelody = async () => {
+    if (!window.confirm("למחוק את המנגינה הזו?")) return;
+    try {
+      await deleteItem("melody", params.id);
+      router.push("/melodies");
+    } catch {
+      /* keep the page in place on server error */
+    }
   };
 
   if (!loaded) return <p>טוען...</p>;
@@ -93,9 +104,14 @@ export default function MelodyPage() {
             ▶ צפה בביצוע ביוטיוב
           </a>
         )}
-        <button className={`like-btn ${liked ? "liked" : ""}`} onClick={toggleLike}>
+        <button className={`like-btn ${melody.liked ? "liked" : ""}`} onClick={toggleLike}>
           👍 {melody.likes}
         </button>
+        {user && melody.ownerId === user.id && (
+          <button type="button" className="like-btn" onClick={deleteMelody}>
+            🗑 מחק מנגינה
+          </button>
+        )}
       </div>
     </>
   );

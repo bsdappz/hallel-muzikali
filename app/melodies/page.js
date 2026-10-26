@@ -3,18 +3,32 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { MELODIES, HALLEL_PARTS, YEAR_TAGS } from "../lib/data";
-import { fetchSiteData } from "../lib/api";
+import { fetchSiteData, deleteItem } from "../lib/api";
 
 export default function MelodiesPage() {
   const [melodies, setMelodies] = useState(MELODIES);
+  const [user, setUser] = useState(null);
   const [part, setPart] = useState("הכל");
   const [tag, setTag] = useState("");
 
   useEffect(() => {
     fetchSiteData()
-      .then((data) => setMelodies(data.melodies))
+      .then((data) => {
+        setMelodies(data.melodies);
+        setUser(data.user);
+      })
       .catch(() => {});
   }, []);
+
+  const deleteMelody = async (id) => {
+    if (!window.confirm("למחוק את המנגינה הזו?")) return;
+    try {
+      await deleteItem("melody", id);
+      setMelodies((prev) => prev.filter((m) => m.id !== id));
+    } catch {
+      /* keep the row in place on server error */
+    }
+  };
 
   // Best melodies float to the top: sorted by likes, descending.
   const visible = useMemo(() => {
@@ -74,6 +88,11 @@ export default function MelodiesPage() {
                 {t}
               </span>
             ))}
+            {user && m.ownerId === user.id && (
+              <button type="button" className="chip" onClick={() => deleteMelody(m.id)}>
+                🗑 מחק
+              </button>
+            )}
           </div>
         </div>
       ))}

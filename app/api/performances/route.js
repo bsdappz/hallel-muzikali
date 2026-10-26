@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server";
-import { addUserPerformance } from "../../lib/db";
+import { addPerformance, deleteOwnItem } from "../../lib/db";
+import { currentUser } from "../../lib/auth";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req) {
+  const user = await currentUser();
+  if (!user) {
+    return NextResponse.json({ error: "יש להתחבר כדי להוסיף תפילה." }, { status: 401 });
+  }
   let body;
   try {
     body = await req.json();
@@ -37,9 +42,27 @@ export async function POST(req) {
     synagogue,
     address,
     chazzanId: null,
-    chazzanName: (typeof body.chazzan === "string" && body.chazzan.trim()) || "—",
+    chazzanName: (typeof body.chazzan === "string" && body.chazzan.trim()) || user.name,
     likes: 0,
+    ownerId: user.id,
+    ownerName: user.name,
   };
-  await addUserPerformance(item);
+  await addPerformance(item);
   return NextResponse.json(item, { status: 201 });
+}
+
+export async function DELETE(req) {
+  const user = await currentUser();
+  if (!user) {
+    return NextResponse.json({ error: "יש להתחבר כדי למחוק." }, { status: 401 });
+  }
+  const id = new URL(req.url).searchParams.get("id") || "";
+  const result = await deleteOwnItem("perf", id, user.id);
+  if (!result.ok) {
+    return NextResponse.json(
+      { error: result.status === 404 ? "התפילה לא נמצאה." : "אפשר למחוק רק תפילות שאתה הוספת." },
+      { status: result.status }
+    );
+  }
+  return NextResponse.json({ ok: true });
 }
