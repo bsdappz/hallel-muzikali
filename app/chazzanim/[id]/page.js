@@ -11,10 +11,12 @@ export default function ChazzanPage() {
   const [chazzan, setChazzan] = useState(null);
   const [melodies, setMelodies] = useState([]);
   const [performances, setPerformances] = useState([]);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     const found = CHAZZANIM.find((c) => c.id === params.id);
     setChazzan(found || null);
+    setLoaded(true);
     if (!found) return;
     const allMelodies = [...MELODIES, ...loadStored("hm_melodies")];
     setMelodies(allMelodies.filter((m) => m.chazzanId === params.id));
@@ -27,6 +29,7 @@ export default function ChazzanPage() {
     );
   }, [params.id]);
 
+  if (!loaded) return <p>טוען...</p>;
   if (!chazzan) return <p>החזן לא נמצא. <Link href="/melodies">חזרה לספרייה</Link></p>;
 
   return (
@@ -35,7 +38,7 @@ export default function ChazzanPage() {
       <div style={{ marginTop: 14 }}>
         <span className="avatar">🎤</span>
         <span style={{ fontSize: 22, fontWeight: "bold" }}>{chazzan.name}</span>
-        <div style={{ fontSize: 13, opacity: 0.75 }}>{chazzan.bio}</div>
+        <div style={{ fontSize: 13, opacity: 0.75 }}>{chazzan.bio} • {melodies.length} מנגינות בספרייה</div>
       </div>
 
       <h2>המנגינות שלו</h2>
