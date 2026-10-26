@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { PERFORMANCES, MELODIES } from "../../lib/data";
 import { adjustLikeCount } from "../../lib/db";
 
 export const dynamic = "force-dynamic";
@@ -16,6 +17,8 @@ export async function POST(req) {
   if (!id) {
     return NextResponse.json({ error: "חסר מזהה פריט." }, { status: 400 });
   }
-  const count = await adjustLikeCount(id, delta);
-  return NextResponse.json({ id, likes: count });
+  const deltaTotal = await adjustLikeCount(id, delta);
+  const demo = [...PERFORMANCES, ...MELODIES].find((it) => it.id === id);
+  const likes = Math.max(0, (demo ? demo.likes || 0 : 0) + deltaTotal);
+  return NextResponse.json({ id, likes });
 }
