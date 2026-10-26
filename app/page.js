@@ -48,6 +48,15 @@ export default function Home() {
   const cities = useMemo(() => ["הכל", ...new Set(all.map((p) => p.city).filter(Boolean))], [all]);
   const times = useMemo(() => ["הכל", ...new Set(all.map((p) => p.time).filter(Boolean))], [all]);
 
+  const hasFilters = search !== "" || city !== "הכל" || date !== "" || time !== "הכל";
+
+  const resetFilters = () => {
+    setSearch("");
+    setCity("הכל");
+    setDate("");
+    setTime("הכל");
+  };
+
   const visible = all.filter((p) => {
     if (city !== "הכל" && p.city !== city) return false;
     if (date && p.date !== date) return false;
@@ -91,9 +100,23 @@ export default function Home() {
             ))}
           </select>
         </label>
+        {hasFilters && (
+          <button type="button" className="chip" onClick={resetFilters} style={{ marginInlineStart: 8 }}>
+            ✕ נקה סינונים
+          </button>
+        )}
       </div>
 
-      {visible.length === 0 && <p>לא נמצאו תפילות קרובות לפי הסינון הנוכחי.</p>}
+      {visible.length === 0 && (
+        <div style={{ textAlign: "center" }}>
+          <p>לא נמצאו תפילות קרובות לפי הסינון הנוכחי.</p>
+          {hasFilters && (
+            <button type="button" className="gold-btn" onClick={resetFilters}>
+              ✕ נקה סינונים והצג הכל
+            </button>
+          )}
+        </div>
+      )}
 
       {visible.map((p) => {
         const liked = !!likes[p.id];
