@@ -1,0 +1,247 @@
+{
+  "default_scale": "Am",
+  "major": {
+    "A": [
+      "A",
+      "Bm",
+      "C#m",
+      "D",
+      "E",
+      "F#m",
+      "G#dim"
+    ],
+    "Bb": [
+      "Bb",
+      "Cm",
+      "Dm",
+      "Eb",
+      "F",
+      "Gm",
+      "Adim"
+    ],
+    "C": [
+      "C",
+      "Dm",
+      "Em",
+      "F",
+      "G",
+      "Am",
+      "Bdim"
+    ],
+    "D": [
+      "D",
+      "Em",
+      "F#m",
+      "G",
+      "A",
+      "Bm",
+      "C#dim"
+    ],
+    "E": [
+      "E",
+      "F#m",
+      "G#m",
+      "A",
+      "B",
+      "C#m",
+      "D#dim"
+    ],
+    "Eb": [
+      "Eb",
+      "Fm",
+      "Gm",
+      "Ab",
+      "Bb",
+      "Cm",
+      "Ddim"
+    ],
+    "F": [
+      "F",
+      "Gm",
+      "Am",
+      "Bb",
+      "C",
+      "Dm",
+      "Edim"
+    ],
+    "G": [
+      "G",
+      "Am",
+      "Bm",
+      "C",
+      "D",
+      "Em",
+      "F#dim"
+    ]
+  },
+  "minor": {
+    "Am": [
+      "Am",
+      "Bdim",
+      "C",
+      "Dm",
+      "E",
+      "F",
+      "G"
+    ],
+    "Bm": [
+      "Bm",
+      "C#dim",
+      "D",
+      "Em",
+      "F#",
+      "G",
+      "A"
+    ],
+    "Cm": [
+      "Cm",
+      "Ddim",
+      "Eb",
+      "Fm",
+      "G",
+      "Ab",
+      "Bb"
+    ],
+    "Dm": [
+      "Dm",
+      "Edim",
+      "F",
+      "Gm",
+      "A",
+      "Bb",
+      "C"
+    ],
+    "Em": [
+      "Em",
+      "F#dim",
+      "G",
+      "Am",
+      "B",
+      "C",
+      "D"
+    ],
+    "F#m": [
+      "F#m",
+      "G#dim",
+      "A",
+      "Bm",
+      "C#",
+      "D",
+      "E"
+    ],
+    "Gm": [
+      "Gm",
+      "Adim",
+      "Bb",
+      "Cm",
+      "D",
+      "Eb",
+      "F"
+    ]
+  },
+  "minor_note": "Minor scales use the harmonic-minor dominant (major V: E in Am, B in Em, A in Dm) because that is the chord actually used in songs, not the natural-minor minor v.",
+  "scope": "Scale is chosen ONCE per song, OUTSIDE the chord panel (in the add-melody form), and affects ALL chords in the song. The chord panel itself only shows the scale as a status line, not a selector.",
+  "note": "Hallel Muzikali — chord dictionary for the add-chords touch UI. The chord bar shows ONLY the common chords of the chosen scale. Default scale: Am. Any other chord (maj7, min7, dim, aug, sus, extensions) is reachable ONLY via search, never in the main bar.",
+  "search_only_examples": [
+    "Amaj7",
+    "Cmaj7",
+    "Dm7",
+    "G7",
+    "Adim",
+    "Bdim",
+    "Eaug",
+    "Asus4",
+    "F#m7",
+    "Cadd9"
+  ],
+  "search_only_rule": "Extensions and altered chords (maj7, min7, 7, dim, aug, sus, add9, 6, 9, 11, 13, slash chords) are NEVER shown in the main chord bar. They appear only when the user types them in search, for users who care about precision.",
+  "common_outside": {
+    "major": {
+      "A": [
+        "G",
+        "Dm",
+        "B"
+      ],
+      "Bb": [
+        "Ab",
+        "Ebm",
+        "C"
+      ],
+      "C": [
+        "Bb",
+        "Fm",
+        "D"
+      ],
+      "D": [
+        "C",
+        "Gm",
+        "E"
+      ],
+      "E": [
+        "D",
+        "Am",
+        "F#"
+      ],
+      "Eb": [
+        "Db",
+        "Abm",
+        "F"
+      ],
+      "F": [
+        "Eb",
+        "Bbm",
+        "G"
+      ],
+      "G": [
+        "F",
+        "Cm",
+        "A"
+      ]
+    },
+    "minor": {
+      "Am": [
+        "D",
+        "Bb",
+        "A",
+        "E7"
+      ],
+      "Bm": [
+        "E",
+        "C",
+        "B",
+        "F#7"
+      ],
+      "Cm": [
+        "F",
+        "Db",
+        "C",
+        "G7"
+      ],
+      "Dm": [
+        "G",
+        "Eb",
+        "D",
+        "A7"
+      ],
+      "Em": [
+        "A",
+        "F",
+        "E",
+        "B7"
+      ],
+      "F#m": [
+        "B",
+        "G",
+        "F#",
+        "C#7"
+      ],
+      "Gm": [
+        "C",
+        "Ab",
+        "G",
+        "D7"
+      ]
+    }
+  },
+  "bar_rule": "The chord bar shows TWO groups: (1) the common chords of the chosen scale, (2) common chords from OUTSIDE the scale (borrowed chords that appear constantly in real songs). Truly exotic/precise chords (maj7, dim, aug, complex extensions) stay search-only."
+}
