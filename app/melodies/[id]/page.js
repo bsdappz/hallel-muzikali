@@ -42,13 +42,21 @@ export default function MelodyPage() {
       .catch(() => setMelody(prev));
   };
 
+  const [pendingDelete, setPendingDelete] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+
   const deleteMelody = async () => {
-    if (!window.confirm("למחוק את המנגינה הזו?")) return;
+    if (!pendingDelete) {
+      setPendingDelete(true);
+      setDeleteError("");
+      return;
+    }
+    setPendingDelete(false);
     try {
       await deleteItem("melody", params.id);
       router.push("/melodies");
-    } catch {
-      /* keep the page in place on server error */
+    } catch (e) {
+      setDeleteError(e.message || "המחיקה נכשלה.");
     }
   };
 
@@ -109,9 +117,10 @@ export default function MelodyPage() {
         </button>
         {user && melody.ownerId === user.id && (
           <button type="button" className="like-btn" onClick={deleteMelody}>
-            🗑 מחק מנגינה
+            {pendingDelete ? "אשר מחיקה?" : "🗑 מחק מנגינה"}
           </button>
         )}
+        {deleteError && <div className="error" style={{ marginTop: 10 }}>{deleteError}</div>}
       </div>
     </>
   );

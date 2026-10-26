@@ -34,8 +34,6 @@ export default function AddMelodyPage() {
       .catch(() => router.push("/login"));
   }, [router]);
 
-  if (!authed) return <p>טוען...</p>;
-
   const lines = useMemo(
     () =>
       linesText
@@ -120,6 +118,10 @@ export default function AddMelodyPage() {
   const searchResults = search.trim() ? searchChords(search).slice(0, 24) : [];
   const typed = search.trim();
   const showTypedChoice = typed && !searchResults.includes(typed);
+
+  // NOTE: this gate must stay AFTER every hook above — an early return
+  // before useMemo breaks React's hook order once authed flips to true.
+  if (!authed) return <p>טוען...</p>;
 
   return (
     <>

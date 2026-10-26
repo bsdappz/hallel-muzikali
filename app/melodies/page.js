@@ -20,13 +20,21 @@ export default function MelodiesPage() {
       .catch(() => {});
   }, []);
 
+  const [pendingDelete, setPendingDelete] = useState(null);
+  const [deleteError, setDeleteError] = useState("");
+
   const deleteMelody = async (id) => {
-    if (!window.confirm("למחוק את המנגינה הזו?")) return;
+    if (pendingDelete !== id) {
+      setPendingDelete(id);
+      setDeleteError("");
+      return;
+    }
+    setPendingDelete(null);
     try {
       await deleteItem("melody", id);
       setMelodies((prev) => prev.filter((m) => m.id !== id));
-    } catch {
-      /* keep the row in place on server error */
+    } catch (e) {
+      setDeleteError(e.message || "המחיקה נכשלה.");
     }
   };
 
@@ -69,6 +77,8 @@ export default function MelodiesPage() {
         )}
       </div>
 
+      {deleteError && <div className="error">{deleteError}</div>}
+
       {visible.length === 0 && <p>לא נמצאו מנגינות לפי הסינון הנוכחי.</p>}
 
       {visible.map((m) => (
@@ -90,7 +100,7 @@ export default function MelodiesPage() {
             ))}
             {user && m.ownerId === user.id && (
               <button type="button" className="chip" onClick={() => deleteMelody(m.id)}>
-                🗑 מחק
+                {pendingDelete === m.id ? "אשר מחיקה?" : "🗑 מחק"}
               </button>
             )}
           </div>

@@ -15,7 +15,8 @@ export default function LoginPage() {
     setError("");
     try {
       await loginUser({ email: email.trim(), password });
-      router.push("/");
+      // Full reload so the header re-reads the new session immediately.
+      window.location.href = "/";
     } catch (e) {
       setError(e.message || "ההתחברות נכשלה.");
     }

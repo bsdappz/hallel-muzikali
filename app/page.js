@@ -55,13 +55,23 @@ export default function Home() {
       });
   };
 
+  // Two-tap delete (no native confirm dialog — those are unreliable in
+  // some browsers/automation): first tap arms, second tap deletes.
+  const [pendingDelete, setPendingDelete] = useState(null);
+  const [deleteError, setDeleteError] = useState("");
+
   const deletePerf = async (id) => {
-    if (!window.confirm("למחוק את התפילה הזו?")) return;
+    if (pendingDelete !== id) {
+      setPendingDelete(id);
+      setDeleteError("");
+      return;
+    }
+    setPendingDelete(null);
     try {
       await deleteItem("perf", id);
       setPerformances((prev) => prev.filter((p) => p.id !== id));
-    } catch {
-      /* server error shown by keeping the card in place */
+    } catch (e) {
+      setDeleteError(e.message || "המחיקה נכשלה.");
     }
   };
 
@@ -146,6 +156,8 @@ export default function Home() {
         </div>
       )}
 
+      {deleteError && <div className="error">{deleteError}</div>}
+
       {visible.map((p) => {
         const liked = !!p.liked;
         return (
@@ -179,7 +191,7 @@ export default function Home() {
                 </button>
                 {user && p.ownerId === user.id && (
                   <button type="button" className="like-btn" onClick={() => deletePerf(p.id)} aria-label="מחק תפילה">
-                    🗑 מחק
+                    {pendingDelete === p.id ? "אשר מחיקה?" : "🗑 מחק"}
                   </button>
                 )}
               </div>
