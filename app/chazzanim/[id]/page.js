@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { CHAZZANIM, MELODIES, PERFORMANCES, formatDate, mapsUrl, todayIso } from "../../lib/data";
-import { loadStored } from "../../lib/store";
+import { fetchSiteData } from "../../lib/api";
 
 export default function ChazzanPage() {
   const params = useParams();
@@ -16,17 +16,23 @@ export default function ChazzanPage() {
   useEffect(() => {
     const found = CHAZZANIM.find((c) => c.id === params.id);
     setChazzan(found || null);
-    setLoaded(true);
-    if (!found) return;
-    const allMelodies = [...MELODIES, ...loadStored("hm_melodies")];
-    setMelodies(allMelodies.filter((m) => m.chazzanId === params.id));
-    const allPerfs = [...PERFORMANCES, ...loadStored("hm_performances")];
-    const today = todayIso();
-    setPerformances(
-      allPerfs
-        .filter((p) => p.chazzanId === params.id && p.date >= today)
-        .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time))
-    );
+    if (!found) {
+      setLoaded(true);
+      return;
+    }
+    const apply = (allMelodies, allPerfs) => {
+      setMelodies(allMelodies.filter((m) => m.chazzanId === params.id));
+      const today = todayIso();
+      setPerformances(
+        allPerfs
+          .filter((p) => p.chazzanId === params.id && p.date >= today)
+          .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time))
+      );
+      setLoaded(true);
+    };
+    fetchSiteData()
+      .then((data) => apply(data.melodies, data.performances))
+      .catch(() => apply(MELODIES, PERFORMANCES));
   }, [params.id]);
 
   if (!loaded) return <p>טוען...</p>;

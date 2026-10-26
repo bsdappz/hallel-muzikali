@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { addStored, uid } from "../lib/store";
+import { postPerformance } from "../lib/api";
 import { todayIso } from "../lib/data";
 
 export default function AddPerformancePage() {
@@ -24,7 +24,7 @@ export default function AddPerformancePage() {
     setFlyerPreview(URL.createObjectURL(file));
   };
 
-  const publish = () => {
+  const publish = async () => {
     if (!date || !time || !synagogue.trim() || !address.trim()) {
       setError("יש למלא את כל שדות החובה: תאריך, שעת תפילה, שם בית כנסת וכתובת מדויקת.");
       return;
@@ -33,20 +33,20 @@ export default function AddPerformancePage() {
       setError("התאריך שבחרת כבר עבר — דף הבית מציג רק תפילות עתידיות, אז תפילה בתאריך עבר לא תופיע. בחר תאריך עתידי.");
       return;
     }
-    addStored("hm_performances", {
-      id: uid("p-user"),
-      title: `הלל מוזיקלי — ${synagogue.trim()}`,
-      date,
-      time,
-      occasion: "",
-      city: city.trim() || "—",
-      synagogue: synagogue.trim(),
-      address: address.trim(),
-      chazzanId: null,
-      chazzanName: chazzan.trim() || "—",
-      likes: 0,
-    });
-    router.push("/");
+    setError("");
+    try {
+      await postPerformance({
+        date,
+        time,
+        synagogue: synagogue.trim(),
+        address: address.trim(),
+        city: city.trim(),
+        chazzan: chazzan.trim(),
+      });
+      router.push("/");
+    } catch (e) {
+      setError(e.message || "השמירה נכשלה. נסה שוב.");
+    }
   };
 
   return (

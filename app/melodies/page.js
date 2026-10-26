@@ -3,27 +3,26 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { MELODIES, HALLEL_PARTS, YEAR_TAGS } from "../lib/data";
-import { loadStored, loadLikes } from "../lib/store";
+import { fetchSiteData } from "../lib/api";
 
 export default function MelodiesPage() {
-  const [stored, setStored] = useState([]);
-  const [likes, setLikes] = useState({});
+  const [melodies, setMelodies] = useState(MELODIES);
   const [part, setPart] = useState("הכל");
   const [tag, setTag] = useState("");
 
   useEffect(() => {
-    setStored(loadStored("hm_melodies"));
-    setLikes(loadLikes());
+    fetchSiteData()
+      .then((data) => setMelodies(data.melodies))
+      .catch(() => {});
   }, []);
 
   // Best melodies float to the top: sorted by likes, descending.
   const visible = useMemo(() => {
-    const all = [...MELODIES, ...stored];
-    return all
+    return melodies
       .filter((m) => (part === "הכל" || m.part === part))
       .filter((m) => (!tag || (m.tags || []).includes(tag)))
-      .sort((a, b) => (b.likes + (likes[b.id] ? 1 : 0)) - (a.likes + (likes[a.id] ? 1 : 0)));
-  }, [stored, likes, part, tag]);
+      .sort((a, b) => (b.likes || 0) - (a.likes || 0));
+  }, [melodies, part, tag]);
 
   const parts = ["הכל", ...HALLEL_PARTS.map((p) => p.id)];
 
@@ -66,7 +65,7 @@ export default function MelodiesPage() {
           <div className="m-meta">
             מזמור {m.part} • חזן:{" "}
             {m.chazzanId ? <Link href={`/chazzanim/${m.chazzanId}`}>{m.chazzanName}</Link> : m.chazzanName} • 👍{" "}
-            {m.likes + (likes[m.id] ? 1 : 0)}
+            {m.likes}
             {m.scale ? ` • סולם ${m.scale}` : ""}
           </div>
           <div className="m-tags">

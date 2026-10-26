@@ -25,7 +25,7 @@ export default function RootLayout({ children }) {
         <footer className="footer">
           הלל מוזיקלי — גרסה ראשונה. הצפייה פתוחה לכולם, בלי הרשמה.
           <br />
-          הוספות בגרסה זו נשמרות בדפדפן שלך בלבד (localStorage).
+          הוספות נשמרות בדיבי המשותף של האתר וגלויות לכולם.
         </footer>
       </body>
     </html>

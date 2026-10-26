@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { PERFORMANCES, formatDate, mapsUrl, todayIso } from "./lib/data";
-import { loadStored, loadLikes, saveLikes } from "./lib/store";
+import { loadLikes, saveLikes } from "./lib/store";
+import { fetchSiteData, postLike } from "./lib/api";
 
 function FlyerPlaceholder({ title }) {
   return (
@@ -15,7 +16,7 @@ function FlyerPlaceholder({ title }) {
 }
 
 export default function Home() {
-  const [stored, setStored] = useState([]);
+  const [performances, setPerformances] = useState(PERFORMANCES);
   const [likes, setLikes] = useState({});
   const [search, setSearch] = useState("");
   const [city, setCity] = useState("הכל");
@@ -23,27 +24,36 @@ export default function Home() {
   const [time, setTime] = useState("הכל");
 
   useEffect(() => {
-    setStored(loadStored("hm_performances"));
     setLikes(loadLikes());
+    fetchSiteData()
+      .then((data) => setPerformances(data.performances))
+      .catch(() => {});
   }, []);
 
   const toggleLike = (id) => {
+    const liked = !likes[id];
+    const delta = liked ? 1 : -1;
     setLikes((prev) => {
       const next = { ...prev };
-      if (next[id]) delete next[id];
-      else next[id] = true;
+      if (liked) next[id] = true;
+      else delete next[id];
       saveLikes(next);
       return next;
+    });
+    setPerformances((prev) => prev.map((p) => (p.id === id ? { ...p, likes: Math.max(0, (p.likes || 0) + delta) } : p)));
+    postLike(id, delta).catch(() => {
+      // Revert the optimistic update if the server write failed.
+      setPerformances((prev) => prev.map((p) => (p.id === id ? { ...p, likes: Math.max(0, (p.likes || 0) - delta) } : p)));
     });
   };
 
   const all = useMemo(() => {
     // Home shows ONLY upcoming performances — never past ones.
     const today = todayIso();
-    return [...PERFORMANCES, ...stored]
+    return performances
       .filter((p) => p.date && p.date >= today)
       .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
-  }, [stored]);
+  }, [performances]);
 
   const cities = useMemo(() => ["הכל", ...new Set(all.map((p) => p.city).filter(Boolean))], [all]);
   const times = useMemo(() => ["הכל", ...new Set(all.map((p) => p.time).filter(Boolean))], [all]);
@@ -147,7 +157,7 @@ export default function Home() {
                   onClick={() => toggleLike(p.id)}
                   aria-label={liked ? "הסר לייק" : "אהבתי"}
                 >
-                  👍 {p.likes + (liked ? 1 : 0)}
+                  👍 {p.likes}
                 </button>
               </div>
             </div>

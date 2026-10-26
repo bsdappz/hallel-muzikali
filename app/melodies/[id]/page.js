@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { MELODIES } from "../../lib/data";
-import { loadStored, loadLikes, saveLikes } from "../../lib/store";
+import { loadLikes, saveLikes } from "../../lib/store";
+import { fetchSiteData, postLike } from "../../lib/api";
 
 export default function MelodyPage() {
   const params = useParams();
@@ -13,18 +14,31 @@ export default function MelodyPage() {
   const [liked, setLiked] = useState(false);
 
   useEffect(() => {
-    const all = [...MELODIES, ...loadStored("hm_melodies")];
-    setMelody(all.find((m) => m.id === params.id) || null);
-    setLoaded(true);
     setLiked(!!loadLikes()[params.id]);
+    const fallback = MELODIES.find((m) => m.id === params.id) || null;
+    fetchSiteData()
+      .then((data) => {
+        setMelody(data.melodies.find((m) => m.id === params.id) || null);
+        setLoaded(true);
+      })
+      .catch(() => {
+        setMelody(fallback);
+        setLoaded(true);
+      });
   }, [params.id]);
 
   const toggleLike = () => {
+    const next = !liked;
+    const delta = next ? 1 : -1;
     const likes = loadLikes();
-    if (likes[params.id]) delete likes[params.id];
-    else likes[params.id] = true;
+    if (next) likes[params.id] = true;
+    else delete likes[params.id];
     saveLikes(likes);
-    setLiked(!liked);
+    setLiked(next);
+    setMelody((prev) => (prev ? { ...prev, likes: Math.max(0, (prev.likes || 0) + delta) } : prev));
+    postLike(params.id, delta).catch(() => {
+      setMelody((prev) => (prev ? { ...prev, likes: Math.max(0, (prev.likes || 0) - delta) } : prev));
+    });
   };
 
   if (!loaded) return <p>טוען...</p>;
@@ -80,7 +94,7 @@ export default function MelodyPage() {
           </a>
         )}
         <button className={`like-btn ${liked ? "liked" : ""}`} onClick={toggleLike}>
-          👍 {melody.likes + (liked ? 1 : 0)}
+          👍 {melody.likes}
         </button>
       </div>
     </>

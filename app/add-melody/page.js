@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { HALLEL_PARTS, YEAR_TAGS } from "../lib/data";
 import { DEFAULT_SCALE, allScales, scaleChords, outsideChords, searchChords } from "../lib/chords";
-import { addStored, uid } from "../lib/store";
+import { postMelody } from "../lib/api";
 
 const DEFAULT_LINES_TEXT =
   "הללו עבדי ה׳ הללו את שם ה׳\nיהי שם ה׳ מבורך מעתה ועד עולם\nממזרח שמש עד מבואו מהלל שם ה׳";
@@ -74,7 +74,7 @@ export default function AddMelodyPage() {
     setSelected(null);
   };
 
-  const publish = () => {
+  const publish = async () => {
     if (!songName.trim()) {
       setError("יש להזין שם שיר.");
       return;
@@ -83,27 +83,26 @@ export default function AddMelodyPage() {
       setError("יש להזין לפחות שורת מילים אחת.");
       return;
     }
-    const partName = (HALLEL_PARTS.find((p) => p.id === part) || {}).name || "";
-    const melody = {
-      id: uid("m-user"),
+    setError("");
+    const payload = {
       title: songName.trim(),
       part,
-      partName,
-      chazzanId: null,
-      chazzanName: "את/ה",
       tags,
-      likes: 0,
       scale,
       chords_mode: mode,
       youtube_url: youtube.trim() || null,
     };
     if (mode === "plain_list") {
-      melody.plain_chords = plainText.split(/[,،\s]+/).map((c) => c.trim()).filter(Boolean);
+      payload.plain_chords = plainText.split(/[,،\s]+/).map((c) => c.trim()).filter(Boolean);
     } else {
-      melody.lines = lines.map((words, li) => ({ words, chords: chords[li] || {} }));
+      payload.lines = lines.map((words, li) => ({ words, chords: chords[li] || {} }));
     }
-    addStored("hm_melodies", melody);
-    router.push("/melodies");
+    try {
+      await postMelody(payload);
+      router.push("/melodies");
+    } catch (e) {
+      setError(e.message || "השמירה נכשלה. נסה שוב.");
+    }
   };
 
   const searchResults = search.trim() ? searchChords(search).slice(0, 24) : [];
