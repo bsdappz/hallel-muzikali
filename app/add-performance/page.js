@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { addStored, uid } from "../lib/store";
+import { todayIso } from "../lib/data";
 
 export default function AddPerformancePage() {
   const router = useRouter();
@@ -26,6 +27,10 @@ export default function AddPerformancePage() {
   const publish = () => {
     if (!date || !time || !synagogue.trim() || !address.trim()) {
       setError("יש למלא את כל שדות החובה: תאריך, שעת תפילה, שם בית כנסת וכתובת מדויקת.");
+      return;
+    }
+    if (date < todayIso()) {
+      setError("התאריך שבחרת כבר עבר — דף הבית מציג רק תפילות עתידיות, אז תפילה בתאריך עבר לא תופיע. בחר תאריך עתידי.");
       return;
     }
     addStored("hm_performances", {
