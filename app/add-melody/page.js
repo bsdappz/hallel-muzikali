@@ -59,6 +59,7 @@ export default function AddMelodyPage() {
       return next;
     });
     setSearch("");
+    setSelected(null);
   };
 
   const removeChord = () => {
@@ -70,6 +71,7 @@ export default function AddMelodyPage() {
       next[selected.li] = line;
       return next;
     });
+    setSelected(null);
   };
 
   const publish = () => {
@@ -173,7 +175,7 @@ export default function AddMelodyPage() {
             <label style={{ fontSize: 13, fontWeight: "bold", color: "#a87f0a" }}>מילות המזמור — שורה בכל שורה</label>
             <textarea value={linesText} onChange={(e) => onLinesTextChange(e.target.value)} />
             <p className="note" style={{ textAlign: "right" }}>
-              👆 גע במילה שבה האקורד מתחלף, ואז גע באקורד בפאנל למטה — הוא יקפוץ מעל המילה.
+              👆 גע במילה שבה האקורד מתחלף — פאנל האקורדים ייפתח, ובחר אקורד; הוא יקפוץ מעל המילה והפאנל ייסגר.
             </p>
             <div className="editor-words">
               {lines.map((words, li) => (
@@ -195,12 +197,16 @@ export default function AddMelodyPage() {
               ))}
             </div>
 
+            {selected && (
             <div className="chord-panel">
-              <div style={{ fontSize: 13 }}>
-                🎼 סולם השיר: <b>{scale}</b> — נבחר למעלה, משפיע על כל האקורדים בשיר.
-                {selected
-                  ? ` המילה שנבחרה: "${lines[selected.li][selected.wi]}"`
-                  : " גע במילה כדי לבחור אותה."}
+              <div style={{ fontSize: 13, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                <span>
+                  🎼 סולם השיר: <b>{scale}</b> — נבחר למעלה, משפיע על כל האקורדים בשיר.
+                  {` המילה שנבחרה: "${lines[selected.li][selected.wi]}"`}
+                </span>
+                <button type="button" aria-label="סגור פאנל" onClick={() => setSelected(null)} style={{ border: "none", background: "transparent", fontSize: 20, cursor: "pointer", flexShrink: 0 }}>
+                  ✕
+                </button>
               </div>
               <div className="panel-label">אקורדים מהסולם:</div>
               <div className="chordbar">
@@ -245,6 +251,7 @@ export default function AddMelodyPage() {
                 </div>
               )}
             </div>
+            )}
           </>
         )}
       </div>
