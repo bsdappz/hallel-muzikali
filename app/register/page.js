@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { registerUser } from "../lib/api";
+import SocialButtons from "../components/SocialButtons";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -45,6 +46,7 @@ export default function RegisterPage() {
           הירשם
         </button>
       </div>
+      <SocialButtons />
       <p className="note" style={{ textAlign: "center" }}>
         כבר רשום? <Link href="/login">התחבר כאן</Link>
       </p>

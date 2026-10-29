@@ -117,6 +117,11 @@ export async function createUser(user) {
   return user;
 }
 
+export async function updateUser(user) {
+  await kv.set(`user:${user.id}`, user);
+  return user;
+}
+
 export async function createSession(userId) {
   const token = [...crypto.getRandomValues(new Uint8Array(32))]
     .map((b) => b.toString(16).padStart(2, "0"))
