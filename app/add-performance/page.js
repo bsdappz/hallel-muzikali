@@ -16,6 +16,7 @@ export default function AddPerformancePage() {
   const [flyerPreview, setFlyerPreview] = useState("");
   const [error, setError] = useState("");
   const [authed, setAuthed] = useState(false);
+  const [publishing, setPublishing] = useState(false);
 
   useEffect(() => {
     fetchMe()
@@ -46,6 +47,7 @@ export default function AddPerformancePage() {
       return;
     }
     setError("");
+    setPublishing(true);
     try {
       await postPerformance({
         date,
@@ -55,8 +57,12 @@ export default function AddPerformancePage() {
         city: city.trim(),
         chazzan: chazzan.trim(),
       });
-      router.push("/");
+      // Full-page navigation, not router.push: the App Router's client
+      // cache can otherwise keep showing the form / a stale home list.
+      // A fresh load guarantees the new item is visible immediately.
+      window.location.href = "/";
     } catch (e) {
+      setPublishing(false);
       setError(e.message || "השמירה נכשלה. נסה שוב.");
     }
   };
@@ -102,8 +108,8 @@ export default function AddPerformancePage() {
       </div>
 
       <div style={{ textAlign: "center" }}>
-        <button className="gold-btn" onClick={publish}>
-          פרסם תפילה
+        <button className="gold-btn" onClick={publish} disabled={publishing}>
+          {publishing ? "מפרסם…" : "פרסם תפילה"}
         </button>
       </div>
     </>

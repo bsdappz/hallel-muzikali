@@ -24,6 +24,7 @@ export default function AddMelodyPage() {
   const [search, setSearch] = useState("");
   const [error, setError] = useState("");
   const [authed, setAuthed] = useState(false);
+  const [publishing, setPublishing] = useState(false);
 
   useEffect(() => {
     fetchMe()
@@ -94,6 +95,7 @@ export default function AddMelodyPage() {
       return;
     }
     setError("");
+    setPublishing(true);
     const payload = {
       title: songName.trim(),
       part,
@@ -109,8 +111,12 @@ export default function AddMelodyPage() {
     }
     try {
       await postMelody(payload);
-      router.push("/melodies");
+      // Full-page navigation, not router.push: the App Router's client
+      // cache can otherwise keep showing a stale library list without
+      // the just-published melody. A fresh load guarantees it is visible.
+      window.location.href = "/melodies";
     } catch (e) {
+      setPublishing(false);
       setError(e.message || "השמירה נכשלה. נסה שוב.");
     }
   };
@@ -279,8 +285,8 @@ export default function AddMelodyPage() {
       </div>
 
       <div style={{ textAlign: "center" }}>
-        <button className="gold-btn" onClick={publish}>
-          פרסם מנגינה
+        <button className="gold-btn" onClick={publish} disabled={publishing}>
+          {publishing ? "מפרסם…" : "פרסם מנגינה"}
         </button>
       </div>
     </>
